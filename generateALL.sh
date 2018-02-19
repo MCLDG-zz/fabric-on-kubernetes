@@ -45,6 +45,7 @@ function generateK8sYaml (){
 function clean () {
 	rm -rf /opt/share/crypto-config/*
 	rm -rf crypto-config
+	sudo yum -y install python35 python35-pip
 }
 
 function deploy_efs () {

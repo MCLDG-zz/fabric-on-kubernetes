@@ -4,7 +4,7 @@ kind: ConfigMap
 metadata:
   name: efs-provisioner
 data:
-  file.system.id: fs-eecb3497
+  file.system.id: fs-c325daba
   aws.region: us-east-2
   provisioner.name: example.com/aws-efs
 ---
@@ -46,7 +46,7 @@ spec:
       volumes:
         - name: pv-volume
           nfs:
-            server: fs-eecb3497.efs.us-east-2.amazonaws.com
+            server: fs-c325daba.efs.us-east-2.amazonaws.com
             path: /
 ---
 kind: StorageClass

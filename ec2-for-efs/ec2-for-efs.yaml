@@ -83,6 +83,15 @@ Parameters:
   RouteTableID:
     Description: route table to be used for subnet routing
     Type: String
+  SubnetA:
+    Description: subnet to create the EFS mount target
+    Type: String
+  SubnetB:
+    Description: subnet to create the EFS mount target
+    Type: String
+  SubnetC:
+    Description: subnet to create the EFS mount target
+    Type: String
   VolumeName:
     Description: The name to be used for the EFS volume
     Type: String
@@ -264,24 +273,24 @@ Resources:
       Path: "/"
       Roles:
       - Ref: CloudWatchPutMetricsRole
-  SubnetRouteTableAssoc:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId:
-        Ref: RouteTableID
-      SubnetId:
-        Ref: Subnet
-  Subnet:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId:
-        Ref: VPCId
-      CidrBlock:
-        Ref: CidrBlock
-      Tags:
-      - Key: Application
-        Value:
-          Ref: AWS::StackId
+#  SubnetRouteTableAssoc:
+#    Type: AWS::EC2::SubnetRouteTableAssociation
+#    Properties:
+#      RouteTableId:
+#        Ref: RouteTableID
+#      SubnetId:
+#        Ref: Subnet
+#  Subnet:
+#    Type: AWS::EC2::Subnet
+#    Properties:
+#      VpcId:
+#        Ref: VPCId
+#      CidrBlock:
+#        Ref: CidrBlock
+#      Tags:
+#      - Key: Application
+#        Value:
+#          Ref: AWS::StackId
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -317,13 +326,31 @@ Resources:
       - Key: Name
         Value:
           Ref: VolumeName
-  MountTarget:
+  MountTargetA:
     Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId:
         Ref: FileSystem
       SubnetId:
-        Ref: Subnet
+        Ref: SubnetA
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
+  MountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        Ref: SubnetB
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
+  MountTargetC:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        Ref: SubnetC
       SecurityGroups:
       - Ref: MountTargetSecurityGroup
   LaunchConfiguration:
@@ -452,7 +479,9 @@ Resources:
           Ref: AsgMaxSize
     Properties:
       VPCZoneIdentifier:
-      - Ref: Subnet
+      - Ref: SubnetA
+      - Ref: SubnetB
+      - Ref: SubnetC
       LaunchConfigurationName:
         Ref: LaunchConfiguration
       MinSize: '1'
