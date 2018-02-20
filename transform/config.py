@@ -28,7 +28,7 @@ def configORGS(name, path): # name means if of org, path describe where is the n
 	namespaceTemplate = getTemplate("fabric_1_0_template_pod_namespace.yaml")
 	render(namespaceTemplate, path + "/" + name + "-namespace.yaml", org = name,
 	pvName = name + "-pv",
-	path = path.replace("transform/../", "/opt/share/")
+	path = path.replace("transform/../", "/efsmount/opt/share/")
 	)
 
 	

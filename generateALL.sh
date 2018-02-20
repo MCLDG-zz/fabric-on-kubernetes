@@ -34,7 +34,7 @@ function generateChannelArtifacts() {
 
 	cp ./channel-artifacts/genesis.block ./crypto-config/ordererOrganizations/*
 
-	cp -r ./crypto-config /opt/share/ && cp -r ./channel-artifacts /opt/share/
+	cp -r ./crypto-config /efsmount/opt/share/ && cp -r ./channel-artifacts /efsmount/opt/share/
 	#/opt/share mouts the remote /opt/share from nfs server
 }
 
@@ -43,12 +43,13 @@ function generateK8sYaml (){
 }
 
 function clean () {
-	rm -rf /opt/share/crypto-config/*
+	rm -rf /efsmount/opt/share/crypto-config/*
 	rm -rf crypto-config
 	sudo yum -y install python35 python35-pip
 }
 
 function deploy_efs () {
+    chmod 755 ./efs/deploy.sh
 	./efs/deploy.sh
 }
 

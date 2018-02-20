@@ -361,6 +361,7 @@ Resources:
           MountConfig:
           - setup
           - mount
+          - install
         setup:
           packages:
             yum:
@@ -443,6 +444,22 @@ Resources:
                 mount -t nfs4 -o nfsvers=4.1 ${FileSystem}.efs.${AWS::Region}.amazonaws.com:/ /${MountPoint}
             02_permissions:
               command: !Sub "chown ec2-user:ec2-user /${MountPoint}"
+        install:
+          commands:
+            01_git:
+              command: !Sub >
+                sudo yum upgrade
+                sudo yum install git
+            02_kubectl:
+              command: !Sub >
+                curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+                chmod +x ./kubectl
+                sudo mv ./kubectl /usr/local/bin/kubectl
+            03_cryptogen:
+              command: !Sub >
+                cd fabric-on-kubernetes
+                curl https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.0.0/hyperledger-fabric-linux-amd64-1.0.0.tar.gz | tar xz
+
     Properties:
       AssociatePublicIpAddress: true
       ImageId:
@@ -471,7 +488,9 @@ Resources:
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     DependsOn:
-    - MountTarget
+    - MountTargetA
+    - MountTargetB
+    - MountTargetC
     CreationPolicy:
       ResourceSignal:
         Timeout: PT15M
@@ -497,7 +516,7 @@ Outputs:
   MountTargetID:
     Description: Mount target ID
     Value:
-      Ref: MountTarget
+      Ref: MountTargetA
   FileSystemID:
     Description: File system ID
     Value:
