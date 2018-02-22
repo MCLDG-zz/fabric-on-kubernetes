@@ -24,11 +24,16 @@ def getTemplate(templateName):
 
 
 # create org/namespace 
-def configORGS(name, path): # name means if of org, path describe where is the namespace yaml to be created. 	
+def configORGS(name, path): # name means if of org, path describe where is the namespace yaml to be created.
 	namespaceTemplate = getTemplate("fabric_1_0_template_pod_namespace.yaml")
+	arr = path.split('/')
+	idx = arr.index('crypto-config')
+	pathname = '/'
+	for i in range(idx, len(arr)):
+		pathname = pathname + arr[i] + '/'
 	render(namespaceTemplate, path + "/" + name + "-namespace.yaml", org = name,
-	pvName = name + "-pv",
-	path = path.replace("transform/../", "/opt/share/")
+		pvName = name + "-pv",
+		path = pathname
 	)
 
 	

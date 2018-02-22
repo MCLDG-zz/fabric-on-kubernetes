@@ -39,13 +39,13 @@ function generateChannelArtifacts() {
 }
 
 function generateK8sYaml (){
-	python3.5 transform/generate.py
+	python3 transform/generate.py
 }
 
 function clean () {
 	rm -rf /opt/share/crypto-config/*
 	rm -rf crypto-config
-	sudo yum -y install python35 python35-pip
+#	sudo yum -y install python35 python35-pip
 }
 
 

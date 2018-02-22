@@ -34,7 +34,6 @@ metadata:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  namespace: $org
   name: $pvName
 spec:
   capacity:
@@ -50,7 +49,7 @@ spec:
     - timeo=600
     - retrans=2
   nfs:
-    server: fs-5a23dc23.efs.us-east-2.amazonaws.com
+    server: fs-bb629dc2.efs.us-east-2.amazonaws.com
     path: $path
 ---
 kind: PersistentVolumeClaim

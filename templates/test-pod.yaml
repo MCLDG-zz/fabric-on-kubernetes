@@ -1,0 +1,57 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: org2
+  name: test-pod
+spec:
+  containers:
+  - name: test-pod
+    image: gcr.io/google_containers/busybox:1.24
+    command:
+      - "/bin/sh"
+    args:
+      - "-c"
+      - "ls -l /; ls -lR /mnt; touch /mnt/SUCCESS && exit 0 || exit 1"
+    volumeMounts:
+      - name: efs-pvc
+        mountPath: "/mnt"
+  restartPolicy: "Never"
+  volumes:
+    - name: efs-pvc
+      persistentVolumeClaim:
+        claimName: test-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: test-pvc
+spec:
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - nfsvers=4.1
+    - rsize=1048576
+    - wsize=1048576
+    - hard
+    - timeo=600
+    - retrans=2
+  nfs:
+    server: fs-bb629dc2.efs.us-east-2.amazonaws.com
+    path: "/"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: org2
+  name: test-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Mi
