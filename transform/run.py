@@ -28,8 +28,11 @@ def runOrderers(path):
 
 def runPeers(path):
 	orgs = os.listdir(path)
+	print('path' + str(path))
+	print('orgs' + str(orgs))
 	for org in orgs:
 		orgPath = os.path.join(path, org)
+		print('orgPath' + str(orgPath))
 
 		namespaceYaml = os.path.join(orgPath, org + "-namespace.yaml" ) # namespace.yaml
 		checkAndRun(namespaceYaml)

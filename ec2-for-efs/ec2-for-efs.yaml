@@ -436,7 +436,7 @@ Resources:
               group: ec2-user
           commands:
             01_createdir:
-              command: !Sub "mkdir /${MountPoint}"
+              command: !Sub "mkdir -p /${MountPoint}"
         mount:
           commands:
             01_mount:
@@ -447,18 +447,15 @@ Resources:
         install:
           commands:
             01_git:
-              command: !Sub >
-                sudo yum upgrade
-                sudo yum install git
-            02_kubectl:
-              command: !Sub >
-                curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-                chmod +x ./kubectl
-                sudo mv ./kubectl /usr/local/bin/kubectl
-            03_cryptogen:
-              command: !Sub >
-                cd fabric-on-kubernetes
-                curl https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.0.0/hyperledger-fabric-linux-amd64-1.0.0.tar.gz | tar xz
+              command: sudo yum -y upgrade && sudo yum -y install git
+            02_repo:
+              command: cd && git clone https://github.com/MCLDG/fabric-on-kubernetes.git
+            03_kubectl_curl:
+              command: curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            04_kubectl_install:
+              command: chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
+            05_cryptogen:
+              command: cd fabric-on-kubernetes && curl https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.0.0/hyperledger-fabric-linux-amd64-1.0.0.tar.gz | tar xz
 
     Properties:
       AssociatePublicIpAddress: true
