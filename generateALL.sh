@@ -49,7 +49,7 @@ function clean () {
 }
 
 
-## Genrates orderer genesis block, channel configuration transaction and anchor peer upddate transactions
+## Genrates orderer genesis block, channel configuration transaction and anchor peer update transactions
 ##function generateChannelArtifacts () {
 ##	CONFIGTXGEN=$TOOLS/configtxgen
 	
