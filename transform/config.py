@@ -12,11 +12,7 @@ def render(src, dest, **kw):
 	with open(dest, 'w') as f:
 		f.write(t.substitute(**kw))
 
-	##### For testing ########################
-	##testDest = dest.split("/")[-1]	##
-	##with open(TestDir+testDest, 'w') as d:##
-	##d.write(t.substitute(**kw))      	##
-	##########################################
+
 def getTemplate(templateName):
 	baseDir = os.path.dirname(__file__)
 	configTemplate = os.path.join(baseDir, "../templates/" + templateName)
@@ -24,16 +20,22 @@ def getTemplate(templateName):
 
 
 # create org/namespace 
-def configORGS(name, path): # name means if of org, path describe where is the namespace yaml to be created.
+def configORGS(name, path, domain): # name means if of org, path describe where is the namespace yaml to be created.
+	print('configORGS. name: ' + name)
+	print('configORGS. path: ' + path)
+	print('configORGS. domain: ' + domain)
+	path = path + '/' + domain
+	print('configORGS. full path: ' + path)
 	namespaceTemplate = getTemplate("fabric_1_0_template_pod_namespace.yaml")
-	arr = path.split('/')
-	idx = arr.index('crypto-config')
-	pathname = '/'
-	for i in range(idx, len(arr)):
-		pathname = pathname + arr[i] + '/'
-	render(namespaceTemplate, path + "/" + name + "-namespace.yaml", org = name,
+#	arr = path.split('/')
+#	idx = arr.index('crypto-config')
+#	pathname = '/'
+#	for i in range(idx, len(arr)):
+#		pathname = pathname + arr[i] + '/'
+	render(namespaceTemplate, path + "/" + name + "-namespace.yaml",
+		org = name,
 		pvName = name + "-pv",
-		path = pathname
+		path = path.replace('/opt/share','')
 	)
 
 	
@@ -43,21 +45,18 @@ def configORGS(name, path): # name means if of org, path describe where is the n
 		
 		mspPathTemplate = 'users/Admin@{}/msp'
 
-		render(cliTemplate, path + "/" + name + "-cli.yaml", name = "cli",
-		namespace = name,
-		mspPath = mspPathTemplate.format(name),
-		pvName = name + "-pv",
-                artifactsName = name + "-artifacts-pv",
-		peerAddress = "peer0." + name + ":7051",
-		mspid = name.split('-')[0].capitalize()+"MSP",
+		render(cliTemplate, path + "/" + name + "-cli.yaml",
+			name = "cli",
+			namespace = name,
+			mspPath = mspPathTemplate.format(domain),
+			pvName = name + "-pv",
+			artifactsName = name + "-artifacts-pv",
+			peerAddress = "peer0." + name + ":7051",
+			mspid = name.split('-')[0].capitalize()+"MSP",
 		)
-		#######
-
-		####### pod config yaml for org ca
-
 		###Need to expose pod's port to worker ! ####
 		##org format like this org1-f-1##
-		addressSegment = (int(name.split("-")[0].split("org")[-1]) - 1) * GAP	
+		addressSegment = (int(name.split(".")[0].split("org")[-1]) - 1) * GAP
 		exposedPort = PORTSTARTFROM + addressSegment
 
 		caTemplate = getTemplate("fabric_1_0_template_pod_ca.yaml")
@@ -68,29 +67,34 @@ def configORGS(name, path): # name means if of org, path describe where is the n
 		cmdTemplate =  ' fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/{}-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/{} -b admin:adminpw -d '
 
 		skFile = ""
-		for f in os.listdir(path+"/ca"):  # find out sk!
+		for f in os.listdir(path + "/ca"):  # find out sk!
 			if f.endswith("_sk"):
 				skFile = f
 			
-		render(caTemplate, path + "/" + name + "-ca.yaml", namespace = name,
-		command = '"' + cmdTemplate.format("ca."+name, skFile) + '"',
-		caPath = caPathTemplate,
-		tlsKey = tlsKeyTemplate.format(skFile),	
-		tlsCert = tlsCertTemplate.format("ca."+name),
-		nodePort = exposedPort,
-		pvName = name + "-pv" 
+		render(caTemplate, path + "/" + name + "-ca.yaml",
+			namespace = name,
+			command = '"' + cmdTemplate.format("ca."+name, skFile) + '"',
+			caPath = caPathTemplate,
+			tlsKey = tlsKeyTemplate.format(skFile),
+			tlsCert = tlsCertTemplate.format("ca."+name),
+			nodePort = exposedPort,
+			pvName = name + "-pv"
 		)
 		#######
 
-def generateYaml(member, memberPath, flag):
+def generateYaml(member, memberPath, flag, domain):
+	print('generateYaml. member: ' + member)
+	print('generateYaml. memberPath: ' + memberPath)
+	print('generateYaml. flag: ' + flag)
 	if flag == "/peers":
-		configPEERS(member, memberPath)
+		configPEERS(member, memberPath, domain)
 	else:
-		configORDERERS(member, memberPath) 
+		configORDERERS(member, memberPath, domain)
 	
 
 # create peer/pod
-def configPEERS(name, path): # name means peerid.
+def configPEERS(name, path, domain): # name means peerid.
+	print('configPEERS name: ' + name)
 	configTemplate = getTemplate("fabric_1_0_template_pod_peer.yaml")
 	
 	mspPathTemplate = 'peers/{}/msp'
@@ -108,24 +112,25 @@ def configPEERS(name, path): # name means peerid.
 	exposedPort2 = PORTSTARTFROM + addressSegment + peerOffset + 2
 	
 	render(configTemplate, path + "/" + name + ".yaml", 
-	namespace = orgName,
-	podName = peerName + "-" + orgName,
-	peerID  = peerName,
-	org = orgName, 
-	corePeerID = name,
-	peerAddress = name + ":7051",
-	peerGossip = name  + ":7051",
-	localMSPID = orgName.split('-')[0].capitalize()+"MSP",
-	mspPath = mspPathTemplate.format(name),
-	tlsPath = tlsPathTemplate.format(name),
-	nodePort1 = exposedPort1,
-	nodePort2 = exposedPort2,
-        pvName = orgName + "-pv"
+		namespace = orgName,
+		podName = peerName + "-" + orgName,
+		peerID  = peerName,
+		org = orgName,
+		corePeerID = name,
+		peerAddress = name + ":7051",
+		peerGossip = name  + ":7051",
+		localMSPID = orgName.split('-')[0].capitalize()+"MSP",
+		mspPath = mspPathTemplate.format(peerName + '.' + domain),
+		tlsPath = tlsPathTemplate.format(peerName + '.' + domain),
+		nodePort1 = exposedPort1,
+		nodePort2 = exposedPort2,
+		pvName = orgName + "-pv"
 	)
 
 
 # create orderer/pod
-def configORDERERS(name, path): # name means ordererid
+def configORDERERS(name, path, domain): # name means ordererid
+	print('configORDERERS name: ' + name)
 	configTemplate = getTemplate("fabric_1_0_template_pod_orderer.yaml")
 	
 	mspPathTemplate = 'orderers/{}/msp'
@@ -134,19 +139,22 @@ def configORDERERS(name, path): # name means ordererid
 	nameSplit = name.split(".")
 	ordererName = nameSplit[0]
 	orgName = nameSplit[1]
-	
-	ordererOffset = int(ordererName.split("orderer")[-1])
+
+	#TODO - uncomment this and test whether it supports multiple orderers
+	#ordererOffset = int(ordererName.split("orderer")[-1])
+	ordererOffset = 1
 	exposedPort = 32000 + ordererOffset
 
 	render(configTemplate, path + "/" + name + ".yaml", 
-	namespace = orgName,
-	ordererID = ordererName,
-	podName =  ordererName + "-" + orgName,
-	localMSPID =  orgName.capitalize() + "MSP",
-	mspPath= mspPathTemplate.format(name),
-	tlsPath= tlsPathTemplate.format(name),
-	nodePort = exposedPort,
-	pvName = orgName + "-pv"
+		namespace = ordererName,
+		ordererID = ordererName,
+		podName =  ordererName + "-" + orgName,
+		localMSPID =  orgName.capitalize() + "MSP",
+		mspPath= mspPathTemplate.format(ordererName + '.' + domain),
+		tlsPath= tlsPathTemplate.format(ordererName + '.' + domain),
+		nodePort = exposedPort,
+	    artifactsName=ordererName + "-artifacts-pv",
+	    pvName = ordererName + "-pv"
 	)
 
 

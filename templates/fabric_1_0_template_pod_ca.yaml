@@ -16,7 +16,7 @@ spec:
     spec:
      containers:
        - name: ca
-         image: hyperledger/fabric-ca:x86_64-1.0.0
+         image: hyperledger/fabric-ca:x86_64-1.1.0-rc1
          env: 
          - name:  FABRIC_CA_HOME
            value: /etc/hyperledger/fabric-ca-server

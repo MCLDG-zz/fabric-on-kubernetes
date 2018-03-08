@@ -455,7 +455,7 @@ Resources:
             04_kubectl_install:
               command: chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
             05_cryptogen:
-              command: cd fabric-on-kubernetes && curl https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.0.0/hyperledger-fabric-linux-amd64-1.0.0.tar.gz | tar xz
+              command: cd fabric-on-kubernetes && curl https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.1.0-rc1/hyperledger-fabric-linux-amd64-1.1.0-rc1.tar.gz | tar xz
 
     Properties:
       AssociatePublicIpAddress: true

@@ -17,13 +17,13 @@ spec:
     spec:
       containers:
       - name: couchdb
-        image: hyperledger/fabric-couchdb:x86_64-1.0.0
+        image: hyperledger/fabric-couchdb:x86_64-1.1.0-preview
         ports:
          - containerPort: 5984
 
 
       - name: $podName 
-        image: hyperledger/fabric-peer:x86_64-1.0.0
+        image: hyperledger/fabric-peer:x86_64-1.1.0-rc1
         env:
         - name: CORE_LEDGER_STATE_STATEDATABASE
           value: "CouchDB"

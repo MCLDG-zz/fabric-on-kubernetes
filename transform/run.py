@@ -1,52 +1,40 @@
 import os
+import yaml
 
-BASEDIR = os.path.dirname(__file__)
-ORDERER = os.path.join(BASEDIR, "../crypto-config/ordererOrganizations") # it must point to the ordererOrgnaizations dir
-PEER = os.path.join(BASEDIR, "../crypto-config/peerOrganizations") # it must point to the peerOrgnaizations dir
-### order of run ###
+BASEDIR = os.path.dirname('/opt/share/')
+ORDERERDIR = os.path.join(BASEDIR, "crypto-config/ordererOrganizations")
+PEERDIR = os.path.join(BASEDIR, "crypto-config/peerOrganizations")
+CRYPTOCONFIG = './crypto-gen/crypto-config.yaml'
 
-#### orderer
-##### namespace(org)
-###### single orderer
+def runOrderers(dir, name, domain):
+	orgPath = os.path.join(dir, domain)
+	namespaceYaml = os.path.join(orgPath, name + "-namespace.yaml" )
+	print('Org Namespace YAML: ' + namespaceYaml)
+	checkAndRun(namespaceYaml)
 
-#### peer
-##### namespace(org)
-###### ca
-####### single peer
+	ordererPath = os.path.join(orgPath + "/orderers", name + '.' + domain)
+	ordererYaml = os.path.join(ordererPath, name + "." + domain + ".yaml")
+	print('Org Orderer Deployment YAML: ' + ordererYaml)
+	checkAndRun(ordererYaml)
 
-def runOrderers(path):
-	orgs = os.listdir(path)
-	for org in orgs:
-		orgPath = os.path.join(path, org)
-		namespaceYaml = os.path.join(orgPath, org + "-namespace.yaml" ) #orgYaml namespace.yaml
-		checkAndRun(namespaceYaml)
+def runPeers(dir, name, domain, peerCount):
+	orgPath = os.path.join(dir, domain)
+	print('Peer orgPath: ' + str(orgPath))
 
-		for orderer in os.listdir(orgPath + "/orderers"):
-			ordererPath = os.path.join(orgPath + "/orderers", orderer)
-			ordererYaml = os.path.join(ordererPath, orderer + ".yaml")
-			checkAndRun(ordererYaml)
+	namespaceYaml = os.path.join(orgPath, name + "-namespace.yaml" )
+	checkAndRun(namespaceYaml)
 
-def runPeers(path):
-	orgs = os.listdir(path)
-	print('path' + str(path))
-	print('orgs' + str(orgs))
-	for org in orgs:
-		orgPath = os.path.join(path, org)
-		print('orgPath' + str(orgPath))
+	caYaml = os.path.join(orgPath, name + "-ca.yaml" )
+	checkAndRun(caYaml)
 
-		namespaceYaml = os.path.join(orgPath, org + "-namespace.yaml" ) # namespace.yaml
-		checkAndRun(namespaceYaml)
-		
-		caYaml = os.path.join(orgPath, org + "-ca.yaml" ) # namespace.yaml
-		checkAndRun(caYaml)		
-		
-		cliYaml = os.path.join(orgPath, org + "-cli.yaml" ) # namespace.yaml
-		checkAndRun(cliYaml)		
+	cliYaml = os.path.join(orgPath, name + "-cli.yaml" )
+	checkAndRun(cliYaml)
 
-		for peer in os.listdir(orgPath + "/peers"):
-			peerPath = os.path.join(orgPath + "/peers", peer)
-			peerYaml = os.path.join(peerPath, peer + ".yaml")
-			checkAndRun(peerYaml)
+	for peerNumber in range(peerCount):
+		peerPath = os.path.join(orgPath + "/peers", 'peer' + str(peerNumber) + '.' + domain)
+		peerYaml = os.path.join(peerPath, 'peer' + str(peerNumber) + '.' + domain + ".yaml")
+		print('Peer Deployment YAML: ' + peerYaml)
+		checkAndRun(peerYaml)
 
 
 def checkAndRun(f):
@@ -54,7 +42,13 @@ def checkAndRun(f):
 		os.system("kubectl create -f " + f)
 
 	else:
-		print("file %s no exited"%(f))
+		print("file %s does not exist"%(f))
+
 if __name__ == "__main__":
-	runOrderers(ORDERER)
-	runPeers(PEER)
+	config = yaml.load(open(CRYPTOCONFIG))
+	for orderer in config['OrdererOrgs']:
+		runOrderers(ORDERERDIR, orderer['Name'].lower(), orderer['Domain'])
+
+	for peer in config['PeerOrgs']:
+		peerCount = peer['Template']['Count']
+		runPeers(PEERDIR, peer['Name'].lower(), peer['Domain'], peerCount)

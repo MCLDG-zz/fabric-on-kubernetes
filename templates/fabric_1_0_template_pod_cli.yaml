@@ -49,7 +49,7 @@ spec:
     spec:
       containers:
         - name: $name
-          image:  hyperledger/fabric-tools:x86_64-1.0.0
+          image:  hyperledger/fabric-tools:x86_64-1.1.0-rc1
           env:
           
           - name: CORE_PEER_TLS_ENABLED

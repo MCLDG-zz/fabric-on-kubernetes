@@ -1,5 +1,38 @@
-###channel-artifacts is no room to place, however bind it to the orderer is an good idea
-
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: $artifactsName
+spec:
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - nfsvers=4.1
+    - rsize=1048576
+    - wsize=1048576
+    - hard
+    - timeo=600
+    - retrans=2
+  nfs:
+    server: fs-bb629dc2.efs.us-east-2.amazonaws.com
+    path: /channel-artifacts
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: $namespace
+  name: $artifactsName
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Mi
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -18,7 +51,7 @@ spec:
     spec:
       containers:
       - name: $podName
-        image: hyperledger/fabric-orderer:x86_64-1.0.0
+        image: hyperledger/fabric-orderer:x86_64-1.1.0-rc1
         env:
         - name: ORDERER_GENERAL_LOGLEVEL
           value: debug
@@ -54,16 +87,15 @@ spec:
            #subPath: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/
            subPath: $tlsPath
          - mountPath: /var/hyperledger/orderer/orderer.genesis.block
-           name: certificate
+           name: artifacts
            subPath: genesis.block
       volumes:
        - name: certificate
          persistentVolumeClaim:
              claimName: $pvName
-           #path: /opt/share
-         #persistentVolumeClaim:
-         #  claimName: nfs
-
+       - name: artifacts
+         persistentVolumeClaim:
+             claimName: $artifactsName
 
 ---
 apiVersion: v1
