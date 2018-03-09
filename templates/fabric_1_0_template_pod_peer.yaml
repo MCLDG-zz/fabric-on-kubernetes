@@ -55,6 +55,8 @@ spec:
           value: $peerGossip
         - name: CORE_PEER_LOCALMSPID
           value: $localMSPID
+        - name: CORE_PEER_CHAINCODELISTENADDRESS
+          value: 0.0.0.0:7052
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
         ports:
          - containerPort: 7051

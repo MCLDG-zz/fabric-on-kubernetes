@@ -35,6 +35,8 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: $pvName
+  labels:
+    pv-name: $pvName
 spec:
   capacity:
     storage: 500Mi
@@ -61,6 +63,9 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: ""
+  selector:
+    matchLabels:
+      pv-name: $pvName
   resources:
     requests:
       storage: 10Mi

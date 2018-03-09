@@ -49,8 +49,7 @@ function generateChannelArtifacts() {
   echo "#################################################################"
   echo "#######    Generating anchor peer update for Org2MSP   ##########"
   echo "#################################################################"
-  $FABRICUTILS/configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate \
-  $CHANNELARTIFACTS/Org2MSPanchors.tx -channelID $CHANNELNAME -asOrg Org2MSP
+  $FABRICUTILS/configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate $CHANNELARTIFACTS/Org2MSPanchors.tx -channelID $CHANNELNAME -asOrg Org2MSP
   if [ "$?" -ne 0 ]; then
     echo "Failed to generate anchor peer update for Org2MSP..."
     exit 1
