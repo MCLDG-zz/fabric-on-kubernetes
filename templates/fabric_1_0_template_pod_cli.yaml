@@ -19,7 +19,7 @@ spec:
     - timeo=600
     - retrans=2
   nfs:
-    server: fs-bb629dc2.efs.us-east-2.amazonaws.com
+    server: $efsserver
     path: /channel-artifacts
 ---
 kind: PersistentVolumeClaim

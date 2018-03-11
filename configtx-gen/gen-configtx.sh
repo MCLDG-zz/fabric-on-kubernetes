@@ -57,12 +57,4 @@ function generateChannelArtifacts() {
   echo
 }
 
-function copyConfig (){
-    echo "Copy config to EFS"
-    rm -rf $EFSMOUNT/$CHANNELARTIFACTS
-    chmod -R 777 $CHANNELARTIFACTS
-	cp -r $CHANNELARTIFACTS $EFSMOUNT
-}
-
 generateChannelArtifacts
-#copyConfig

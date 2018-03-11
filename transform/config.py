@@ -2,11 +2,12 @@ from string import Template
 #from pathlib import Path
 import string
 import os
+import yaml
 
 TestDir = './dest/'
 PORTSTARTFROM = 30000
 GAP = 100  #interval for worker's port
-
+EFSCONFIG = './efsconfig.yaml'
 def render(src, dest, **kw):
 	t = Template(open(src, 'r').read())
 	with open(dest, 'w') as f:
@@ -21,6 +22,9 @@ def getTemplate(templateName):
 
 # create org/namespace 
 def configORGS(name, path, domain): # name means if of org, path describe where is the namespace yaml to be created.
+	efsconfig = yaml.load(open(EFSCONFIG))
+	efsserver = efsconfig['efsserver']
+	print('efs server url: ' + efsserver)
 	print('configORGS. name: ' + name)
 	print('configORGS. path: ' + path)
 	print('configORGS. domain: ' + domain)
@@ -33,8 +37,9 @@ def configORGS(name, path, domain): # name means if of org, path describe where 
 #	for i in range(idx, len(arr)):
 #		pathname = pathname + arr[i] + '/'
 	render(namespaceTemplate, path + "/" + name + "-namespace.yaml",
-		org = name,
+		org = domain,
 		pvName = name + "-pv",
+		efsserver = efsserver,
 		path = path.replace('/opt/share','')
 	)
 
@@ -52,7 +57,8 @@ def configORGS(name, path, domain): # name means if of org, path describe where 
 			pvName = name + "-pv",
 			artifactsName = name + "-artifacts-pv",
 			peerAddress = "peer0." + name + ":7051",
-			mspid = name.split('-')[0].capitalize()+"MSP",
+ 		    efsserver=efsserver,
+ 		    mspid = name.split('-')[0].capitalize()+"MSP",
 		)
 		###Need to expose pod's port to worker ! ####
 		##org format like this org1-f-1##
@@ -95,6 +101,9 @@ def generateYaml(member, memberPath, flag, domain):
 # create peer/pod
 def configPEERS(name, path, domain): # name means peerid.
 	print('configPEERS name: ' + name)
+	print('configPEERS. path: ' + path)
+	print('configPEERS. domain: ' + domain)
+	print('configPEERS. full path: ' + path)
 	configTemplate = getTemplate("fabric_1_0_template_pod_peer.yaml")
 	
 	mspPathTemplate = 'peers/{}/msp'
@@ -112,10 +121,10 @@ def configPEERS(name, path, domain): # name means peerid.
 	exposedPort2 = PORTSTARTFROM + addressSegment + peerOffset + 2
 	
 	render(configTemplate, path + "/" + name + ".yaml", 
-		namespace = orgName,
-		podName = peerName + "-" + orgName,
+		namespace = domain,
+		podName = peerName + "-" + domain,
 		peerID  = peerName,
-		org = orgName,
+		org = domain,
 		corePeerID = name,
 		peerAddress = name + ":7051",
 		peerGossip = name  + ":7051",
@@ -124,13 +133,17 @@ def configPEERS(name, path, domain): # name means peerid.
 		tlsPath = tlsPathTemplate.format(peerName + '.' + domain),
 		nodePort1 = exposedPort1,
 		nodePort2 = exposedPort2,
-		pvName = orgName + "-pv"
+		pvName = domain + "-pv"
 	)
 
 
 # create orderer/pod
 def configORDERERS(name, path, domain): # name means ordererid
+	efsconfig = yaml.load(open(EFSCONFIG))
+	efsserver = efsconfig['efsserver']
 	print('configORDERERS name: ' + name)
+	print('configORDERERS. path: ' + path)
+	print('configORDERERS. domain: ' + domain)
 	configTemplate = getTemplate("fabric_1_0_template_pod_orderer.yaml")
 	
 	mspPathTemplate = 'orderers/{}/msp'
@@ -146,14 +159,15 @@ def configORDERERS(name, path, domain): # name means ordererid
 	exposedPort = 32000 + ordererOffset
 
 	render(configTemplate, path + "/" + name + ".yaml", 
-		namespace = ordererName,
+		namespace = domain,
 		ordererID = ordererName,
-		podName =  ordererName + "-" + orgName,
+		podName =  ordererName + "-" + domain,
 		localMSPID =  orgName.capitalize() + "MSP",
 		mspPath= mspPathTemplate.format(ordererName + '.' + domain),
 		tlsPath= tlsPathTemplate.format(ordererName + '.' + domain),
 		nodePort = exposedPort,
 	    artifactsName=ordererName + "-artifacts-pv",
+	    efsserver=efsserver,
 	    pvName = ordererName + "-pv"
 	)
 

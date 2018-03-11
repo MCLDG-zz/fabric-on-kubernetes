@@ -9,7 +9,7 @@ CRYPTOCONFIG = './crypto-gen/crypto-config.yaml'
 def deleteOrderers(dir, name, domain):
 	orgPath = os.path.join(dir, domain)
 	namespaceYaml = os.path.join(orgPath, name + "-namespace.yaml" )
-	ordererPath = os.path.join(orgPath + "/orderers", name, domain)
+	ordererPath = os.path.join(orgPath + "/orderers", name + '.' + domain)
 	ordererYaml = os.path.join(ordererPath, name + "." + domain + ".yaml")
 	print('Org Orderer Deployment YAML: ' + ordererYaml)
 	checkAndDelete(ordererYaml)

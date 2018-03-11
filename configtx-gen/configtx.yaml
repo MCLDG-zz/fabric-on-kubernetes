@@ -56,7 +56,7 @@ Organizations:
         Name: OrdererOrg
 
         # ID to load the MSP definition as
-        ID: OrdererMSP
+        ID: OrgordererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
         MSPDir: /opt/share/crypto-config/ordererOrganizations/orgorderer/msp
