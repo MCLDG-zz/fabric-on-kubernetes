@@ -457,11 +457,11 @@ Resources:
             05_cryptogen:
               command: cd /home/ec2-user/fabric-on-kubernetes && curl https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.1.0-rc1/hyperledger-fabric-linux-amd64-1.1.0-rc1.tar.gz | tar xz
             06_permissions:
-              command: cd /home/ec2-user && chown -R ec2-user:ec2-user /home/ec2-user/fabric-on-kubernetes &&
+              command: cd /home/ec2-user && chown -R ec2-user:ec2-user /home/ec2-user/fabric-on-kubernetes && cd /home/ec2-user/fabric-on-kubernetes && chmod +x ./run-all.sh && chmod +x ./crypto-gen/gen-certs.sh && chmod +x ./configtx-gen/gen-configtx.sh
             07_python:
               command: sudo yum install -y python35 python35-pip
             08_pip:
-              command: sudo /usr/local/bin/pip3 install -r transform/requirements.txt
+              command: cd /home/ec2-user/fabric-on-kubernetes && sudo /usr/local/bin/pip3 install -r transform/requirements.txt
     Properties:
       AssociatePublicIpAddress: true
       ImageId:

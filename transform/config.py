@@ -7,7 +7,9 @@ import yaml
 TestDir = './dest/'
 PORTSTARTFROM = 30000
 GAP = 100  #interval for worker's port
-EFSCONFIG = './efsconfig.yaml'
+EFSCONFIG = './transform/efsconfig.yaml'
+
+
 def render(src, dest, **kw):
 	t = Template(open(src, 'r').read())
 	with open(dest, 'w') as f:
